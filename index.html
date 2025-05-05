@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Arbitrage Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body class="bg-gray-900 text-white font-['Inter']">
+    <!-- Header -->
+    <header class="bg-gray-800 border-b border-gray-700">
+        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-blue-500">CryptoScan Pro</div>
+            <div class="flex gap-4">
+                <button id="connectWallet" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition">
+                    Connect Wallet
+                </button>
+                <button class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition">
+                    Download App
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Scanner Section -->
+        <section class="mb-8">
+            <div class="bg-gray-800 rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4">Live Arbitrage Scanner</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left border-b border-gray-700">
+                                <th class="py-3 px-4">Coin</th>
+                                <th class="py-3 px-4">Buy Exchange</th>
+                                <th class="py-3 px-4">Buy Price</th>
+                                <th class="py-3 px-4">Sell Exchange</th>
+                                <th class="py-3 px-4">Sell Price</th>
+                                <th class="py-3 px-4">Profit %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="arbitrageData">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Price Scanner Section -->
+        <section>
+            <div class="bg-gray-800 rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4">Top 15 Exchange Prices</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="priceGrid">
+                    <!-- Data will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Sample exchange list
+        const exchanges = ['Binance', 'Coinbase', 'Kraken', 'KuCoin', 'Huobi', 'Bitfinex', 'Bybit', 'OKX', 'Gemini', 'Gate.io', 'Bittrex', 'FTX', 'Bitstamp', 'Poloniex', 'Bithumb'];
+        
+        // Sample coins
+        const coins = ['BTC', 'ETH', 'BNB', 'XRP', 'ADA', 'DOGE', 'DOT'];
+
+        // Function to generate random price
+        function randomPrice(base) {
+            return (base + (Math.random() - 0.5) * base * 0.1).toFixed(2);
+        }
+
+        // Function to update arbitrage data
+        function updateArbitrageData() {
+            const tbody = document.getElementById('arbitrageData');
+            tbody.innerHTML = '';
+
+            for (let i = 0; i < 10; i++) {
+                const coin = coins[Math.floor(Math.random() * coins.length)];
+                const buyExchange = exchanges[Math.floor(Math.random() * exchanges.length)];
+                const sellExchange = exchanges[Math.floor(Math.random() * exchanges.length)];
+                const buyPrice = randomPrice(100);
+                const sellPrice = randomPrice(parseFloat(buyPrice));
+                const profit = ((sellPrice - buyPrice) / buyPrice * 100).toFixed(2);
+
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-700 hover:bg-gray-700';
+                row.innerHTML = `
+                    <td class="py-3 px-4">${coin}</td>
+                    <td class="py-3 px-4">${buyExchange}</td>
+                    <td class="py-3 px-4">$${buyPrice}</td>
+                    <td class="py-3 px-4">${sellExchange}</td>
+                    <td class="py-3 px-4">$${sellPrice}</td>
+                    <td class="py-3 px-4 ${profit > 0 ? 'text-green-500' : 'text-red-500'}">${profit}%</td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        // Function to update price grid
+        function updatePriceGrid() {
+            const grid = document.getElementById('priceGrid');
+            grid.innerHTML = '';
+
+            exchanges.forEach(exchange => {
+                const coin = coins[Math.floor(Math.random() * coins.length)];
+                const price = randomPrice(1000);
+                const card = document.createElement('div');
+                card.className = 'bg-gray-700 p-4 rounded-lg';
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold">${exchange}</h3>
+                            <p class="text-sm text-gray-400">${coin}/USDT</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold">$${price}</p>
+                            <p class="text-sm ${Math.random() > 0.5 ? 'text-green-500' : 'text-red-500'}">
+                                ${Math.random() > 0.5 ? '+' : '-'}${(Math.random() * 5).toFixed(2)}%
+                            </p>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Connect wallet functionality
+        document.getElementById('connectWallet').addEventListener('click', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const button = document.getElementById('connectWallet');
+                    button.textContent = 'Connected';
+                    button.classList.add('bg-green-600');
+                } catch (error) {
+                    console.error('User denied account access');
+                }
+            } else {
+                alert('Please install MetaMask!');
+            }
+        });
+
+        // Update data every 5 seconds
+        updateArbitrageData();
+        updatePriceGrid();
+        setInterval(() => {
+            updateArbitrageData();
+            updatePriceGrid();
+        }, 5000);
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
